@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/cms",
+	"description": "Project Orange Box File Based CMS",
+	"version": "1.0",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\cms\\": "src"
+		}
+	},
+	"minimum-stability": "dev",
+	"require": {
+		"michelf/php-markdown": "^1.8",
+		"zordius/lightncandy": "dev-master"
+	}
+}
