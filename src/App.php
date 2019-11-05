@@ -11,6 +11,7 @@
 
 namespace projectorangebox\cms;
 
+use projectorangebox\cms\FileHandler;
 use projectorangebox\cms\AppInterface;
 use projectorangebox\cms\AppFileTraits;
 use projectorangebox\cms\CacheInterface;
@@ -87,17 +88,17 @@ class App implements AppInterface
 	 */
 	public function bootstrap(array &$config, ContainerInterface $container): void
 	{
-		$container->config = new \projectorangebox\cms\config($config);
-		$container->log = new \projectorangebox\cms\logger($container->config->get('log'));
-		$container->cache = new \projectorangebox\cms\cache($container->config->get('paths.cache', '/cache'), DEBUG);
+		$container->config = new Config($config);
+		$container->log = new Logger($container->config->get('log'));
+		$container->cache = new Cache($container->config->get('paths.cache', '/cache'), DEBUG);
 
-		$container->file = new \projectorangebox\cms\FileHandler($container->config->get('paths.data'), $container->cache);
+		$container->file = new FileHandler($container->config->get('paths.data'), $container->cache);
 
-		$container->data = new \projectorangebox\cms\data($container->config->get('data', []));
+		$container->data = new Data($container->config->get('data', []));
 
-		$container->request = new \projectorangebox\cms\request($container->config->get('request'));
+		$container->request = new Request($container->config->get('request'));
 
-		$container->parser = new \projectorangebox\cms\parser($container->config->get('response.404 view'));
+		$container->parser = new Parser($container->config->get('response.404 view'));
 
 		$container->parser->html = new Handlebars([
 			'cache folder' => $container->config->get('paths.cache') . '/handlebars', /* string - folder inside cache folder if any */
@@ -116,9 +117,9 @@ class App implements AppInterface
 			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.markdown extension', 'md'), $container->cache),
 		]);
 
-		$container->response = new \projectorangebox\cms\response();
+		$container->response = new Response();
 
-		$container->router = new \projectorangebox\cms\router($container->config->get('router.routes'), $container->cache);
+		$container->router = new Router($container->config->get('router.routes'), $container->cache);
 	}
 
 	/**
