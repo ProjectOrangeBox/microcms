@@ -45,13 +45,15 @@ class Cache implements CacheInterface
 
 		$get = false;
 
-		if (App::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && App::file_exists($this->cachePath . $key)) {
-			$meta = $this->getMetadata($key);
+		if ($this->ttl > 0) {
+			if (App::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && App::file_exists($this->cachePath . $key)) {
+				$meta = $this->getMetadata($key);
 
-			if (time() > $meta['expire']) {
-				$this->delete($key);
-			} else {
-				$get = App::include($this->cachePath . $key);
+				if (time() > $meta['expire']) {
+					$this->delete($key);
+				} else {
+					$get = App::include($this->cachePath . $key);
+				}
 			}
 		}
 
@@ -76,7 +78,7 @@ class Cache implements CacheInterface
 		\log_message('info', 'Cache Save ' . $key);
 
 		$data = App::var_export_safe($value);
-		die($key);
+
 		$this->saveMetadata($key, $data, $this->ttl($ttl));
 
 		return (bool) App::atomic_file_put_contents($this->cachePath . $key, $data);
