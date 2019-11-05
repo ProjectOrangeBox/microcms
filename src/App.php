@@ -90,7 +90,8 @@ class App implements AppInterface
 	{
 		$container->config = new Config($config);
 		$container->log = new Logger($container->config->get('log'));
-		$container->cache = new Cache($container->config->get('paths.cache', '/cache'), DEBUG);
+
+		$container->cache = new Cache($container->config->get('cache.path', '/cache'), $container->config->get('cache.ttl', 0));
 
 		$container->file = new FileHandler($container->config->get('paths.data'), $container->cache);
 
@@ -101,20 +102,20 @@ class App implements AppInterface
 		$container->parser = new Parser($container->config->get('response.404 view'));
 
 		$container->parser->html = new Handlebars([
-			'cache folder' => $container->config->get('paths.cache') . '/handlebars', /* string - folder inside cache folder if any */
-			'plugins' => $this->fileCache($container->config->get('paths.plugins') . '/*.' . $container->config->get('parser.handlebars plugin extension', 'php'), $container->cache),
-			'templates' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.handlebars extension', 'hbs'), $container->cache),
+			'cache folder' => $container->config->get('cache.path') . '/handlebars', /* string - folder inside cache folder if any */
+			'plugins' => $this->fileCache($container->config->get('paths.plugins') . '/*.' . $container->config->get('parser.handlebars plugin extension', 'php'), $container->cache, '.handlebar.plugins'),
+			'templates' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.handlebars extension', 'hbs'), $container->cache, '.handlebar.templates'),
 			'partials' => [],
 		]);
 
 		$container->parser->php = new PHPview([
-			'cache folder' => $container->config->get('paths.cache') . '/phpview',
-			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.view extension', 'php'), $container->cache),
+			'cache folder' => $container->config->get('cache.path') . '/phpview',
+			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.view extension', 'php'), $container->cache, '.php.templates'),
 		]);
 
 		$container->parser->md = new Markdown([
-			'cache folder' => $container->config->get('paths.cache') . '/markdown',
-			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.markdown extension', 'md'), $container->cache),
+			'cache folder' => $container->config->get('cache.path') . '/markdown',
+			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.markdown extension', 'md'), $container->cache, '.markdown.templates'),
 		]);
 
 		$container->response = new Response();
@@ -142,9 +143,9 @@ class App implements AppInterface
 		return $data;
 	}
 
-	protected function fileCache(string $path, CacheInterface $cache): array
+	protected function fileCache(string $path, CacheInterface $cache, string $extra = ''): array
 	{
-		$cacheKey = 'fileCache.' . \md5($path) . '.php';
+		$cacheKey = 'fileCache.' . \md5($path) . $extra . '.php';
 
 		if (!$found = $cache->get($cacheKey)) {
 			$pathinfo = \pathinfo($path);

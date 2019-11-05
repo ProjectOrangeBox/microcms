@@ -97,17 +97,12 @@ class Parser implements ParserInterface
 	protected function findView(string $key): string
 	{
 		foreach (\array_keys($this->parsers) as $extension) {
-			try {
-				/* if it's not found this will throw an error therefore we need to capture it so it doesn't bubble up */
-				$this->parsers[$extension]->exists($key);
-
-				break;
-			} catch (Exception $e) {
-				$extension = '';
+			if (!empty($this->parsers[$extension]->exists($key))) {
+				return $extension;
 			}
 		}
 
 		/* return the handler that said they have the matching key */
-		return $extension;
+		return '';
 	}
 } /* end class */

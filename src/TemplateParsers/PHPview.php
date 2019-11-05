@@ -31,11 +31,7 @@ class PHPview implements TemplateParserInterface
 
 		log_message('info', 'Find ' . $name);
 
-		if (!isset($this->config['views'][$name])) {
-			throw new FileNotFoundException($name);
-		}
-
-		return $this->config['views'][$name];
+		return $this->config['views'][$name] ?? '';
 	}
 
 	public function parse(string $view, array $data = [], bool $return = false): string

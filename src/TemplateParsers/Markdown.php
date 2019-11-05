@@ -84,10 +84,6 @@ class Markdown implements TemplateParserInterface
 
 		log_message('info', 'Find ' . $name);
 
-		if (!isset($this->config['views'][$name])) {
-			throw new FileNotFoundException($name);
-		}
-
-		return $this->config['views'][$name];
+		return $this->config['views'][$name] ?? '';
 	}
 } /* end class */

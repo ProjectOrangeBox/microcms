@@ -30,7 +30,7 @@ class Cache implements CacheInterface
 	protected $cachePath = '';
 	protected $ttl;
 
-	public function __construct(string $cachePath, int $ttl = 600)
+	public function __construct(string $cachePath, int $ttl)
 	{
 		/* make cache path ready to use */
 		$this->cachePath = rtrim($cachePath, '/') . '/';
@@ -58,22 +58,26 @@ class Cache implements CacheInterface
 		return $get;
 	}
 
-	public function getMetadata(string $key)
+	public function getMetadata(string $key): array
 	{
 		$file = $this->cachePath . $key;
 
-		return (!App::is_file($file . '.meta') || !App::is_file($file)) ? false : App::include($file . '.meta');
+		$metaData = [];
+
+		if (App::is_file($file . '.meta') && App::is_file($file)) {
+			$metaData = App::include($file . '.meta');
+		}
+
+		return $metaData;
 	}
 
 	public function save(string $key, $value, int $ttl = null)
 	{
 		\log_message('info', 'Cache Save ' . $key);
 
-		$ttl = ($ttl) ? $ttl : $this->ttl();
-
 		$data = App::var_export_safe($value);
-
-		$this->saveMetadata($key, $data, $ttl);
+		die($key);
+		$this->saveMetadata($key, $data, $this->ttl($ttl));
 
 		return (bool) App::atomic_file_put_contents($this->cachePath . $key, $data);
 	}

@@ -82,11 +82,7 @@ class Handlebars implements TemplateParserInterface
 
 		log_message('info', 'Find ' . $name);
 
-		if (!isset($this->config['templates'][$name])) {
-			throw new TemplateNotFoundException($name);
-		}
-
-		return $this->config['templates'][$name];
+		return $this->config['templates'][$name] ?? '';
 	}
 
 	/* These are just like CodeIgniter regular parser */
