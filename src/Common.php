@@ -88,3 +88,20 @@ function array_set_by(array &$array, string $notation, $value): void
 
 	$array[$key] = $value;
 }
+
+function pluginInput(array &$array, string $key, $default = null, string $regex = null) /* mixed */
+{
+	$value = $array['hash'][$key] ?? $default;
+
+	if ($value === null) {
+		showException(new \Exception('Plugin Argument "' . $key . '" is required.'));
+	}
+
+	if ($regex) {
+		if (!preg_match($regex, $value)) {
+			showException(new \Exception('Plugin Value for the Argument "' . $key . '" failed validation.'));
+		}
+	}
+
+	return $value;
+}
