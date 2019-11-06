@@ -33,6 +33,7 @@ class Parser implements ParserInterface
 	protected $parsers = [];
 	protected $fourohfour = '';
 	protected $reparseKey;
+	protected $reparseData = [];
 
 	public function __construct(string $fourohfour)
 	{
@@ -57,9 +58,11 @@ class Parser implements ParserInterface
 		$this->parsers[$this->normalizeExtension($extension)] = &$parser;
 	}
 
-	public function reparse(string $key): ParserInterface
+	public function reparse(string $key, array $data = []): ParserInterface
 	{
 		$this->reparseKey = $key;
+
+		$this->reparseData = $data;
 
 		return $this;
 	}
@@ -75,6 +78,8 @@ class Parser implements ParserInterface
 		 * this replaces the current output
 		 */
 		while ($this->reparseKey) {
+			$data = array_replace($data, $this->reparseData);
+
 			/* clear it so we don't loop */
 			unset($this->reparseKey);
 

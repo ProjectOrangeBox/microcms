@@ -54,6 +54,8 @@ class Response implements ResponseInterface
 		}
 
 		echo $this->finalOutput;
+
+		$this->exit(0);
 	}
 
 	public function setRespondsCode(int $code): ResponseInterface
@@ -61,5 +63,17 @@ class Response implements ResponseInterface
 		http_response_code($code);
 
 		return $this;
+	}
+
+	public function header(string $string, bool $replace = true, int $http_response_code = null): ResponseInterface
+	{
+		header($string, $replace, $http_response_code);
+
+		return $this;
+	}
+
+	public function exit(int $status = 0): void
+	{
+		exit($status);
 	}
 } /* end class */
