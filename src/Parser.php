@@ -75,6 +75,9 @@ class Parser implements ParserInterface
 		 * this replaces the current output
 		 */
 		while ($this->reparseKey) {
+			/* clear it so we don't loop */
+			unset($this->reparseKey);
+
 			$html = $this->_parse($this->reparseKey, $data);
 		}
 
