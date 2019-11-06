@@ -32,6 +32,7 @@ class Parser implements ParserInterface
 {
 	protected $parsers = [];
 	protected $fourohfour = '';
+	protected $reparseKey;
 
 	public function __construct(string $fourohfour)
 	{
@@ -56,7 +57,32 @@ class Parser implements ParserInterface
 		$this->parsers[$this->normalizeExtension($extension)] = &$parser;
 	}
 
+	public function reparse(string $key): ParserInterface
+	{
+		$this->reparseKey = $key;
+
+		return $this;
+	}
+
 	public function parse(string $key, array $data = []): string
+	{
+		/* parse the router provided template */
+		$html = $this->_parse($key, $data);
+
+		/**
+		 * If somewhere on the orginal template they set the reparseKey
+		 * we need to re-parse the new template with the same data
+		 * this replaces the current output
+		 */
+		while ($this->reparseKey) {
+			$html = $this->_parse($this->reparseKey, $data);
+		}
+
+		/* return the output */
+		return $html;
+	}
+
+	public function _parse(string $key, array $data = []): string
 	{
 		$key = $this->normailizedKey($key);
 		$extension = $this->findView($key);

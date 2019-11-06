@@ -103,19 +103,19 @@ class App implements AppInterface
 
 		$container->parser->html = new Handlebars([
 			'cache folder' => $container->config->get('cache.path') . '/handlebars', /* string - folder inside cache folder if any */
-			'plugins' => $this->fileCache($container->config->get('paths.plugins') . '/*.' . $container->config->get('parser.handlebars plugin extension', 'php'), $container->cache, '.handlebar.plugins'),
-			'templates' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.handlebars extension', 'hbs'), $container->cache, '.handlebar.templates'),
+			'plugins' => $this->searchFor('handlebar.plugins', $container->config->get('paths.plugins') . '/*.' . $container->config->get('parser.handlebars plugin extension', 'php'), $container->cache),
+			'templates' => $this->searchFor('handlebar.templates', $container->config->get('paths.site') . '/*.' . $container->config->get('parser.handlebars extension', 'hbs'), $container->cache),
 			'partials' => [],
 		]);
 
 		$container->parser->php = new PHPview([
 			'cache folder' => $container->config->get('cache.path') . '/phpview',
-			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.view extension', 'php'), $container->cache, '.php.templates'),
+			'views' => $this->searchFor('php.templates', $container->config->get('paths.site') . '/*.' . $container->config->get('parser.view extension', 'php'), $container->cache),
 		]);
 
 		$container->parser->md = new Markdown([
 			'cache folder' => $container->config->get('cache.path') . '/markdown',
-			'views' => $this->fileCache($container->config->get('paths.site') . '/*.' . $container->config->get('parser.markdown extension', 'md'), $container->cache, '.markdown.templates'),
+			'views' => $this->searchFor('markdown.templates', $container->config->get('paths.site') . '/*.' . $container->config->get('parser.markdown extension', 'md'), $container->cache),
 		]);
 
 		$container->response = new Response();
@@ -143,9 +143,9 @@ class App implements AppInterface
 		return $data;
 	}
 
-	protected function fileCache(string $path, CacheInterface $cache, string $extra = ''): array
+	protected function searchFor(string $cacheName, string $path, CacheInterface $cache): array
 	{
-		$cacheKey = 'fileCache.' . \md5($path) . $extra . '.php';
+		$cacheKey = 'app.' . $cacheName . '.php';
 
 		if (!$found = $cache->get($cacheKey)) {
 			$pathinfo = \pathinfo($path);

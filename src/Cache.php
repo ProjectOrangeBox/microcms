@@ -45,7 +45,7 @@ class Cache implements CacheInterface
 
 		$get = false;
 
-		if ($this->ttl > 0) {
+		if ($this->ttl > 1) {
 			if (App::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && App::file_exists($this->cachePath . $key)) {
 				$meta = $this->getMetadata($key);
 
@@ -54,6 +54,8 @@ class Cache implements CacheInterface
 				} else {
 					$get = App::include($this->cachePath . $key);
 				}
+			} else {
+				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');
 			}
 		}
 
