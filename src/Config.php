@@ -35,59 +35,14 @@ class Config implements ConfigInterface
 
 	public function get(string $notation,/* mixed */ $default = null) /* mixed */
 	{
-		return $this->getDotNotation($this->config, $notation, $default);
-	}
-
-	protected function getDotNotation(array $array, string $notation, $default = null) /* mixed */
-	{
-		$value = $default;
-
-		if (is_array($array) && array_key_exists($notation, $array)) {
-			$value = $array[$notation];
-		} elseif (is_object($array) && property_exists($array, $notation)) {
-			$value = $array->$notation;
-		} else {
-			$segments = explode('.', $notation);
-
-			foreach ($segments as $segment) {
-				if (is_array($array) && array_key_exists($segment, $array)) {
-					$value = $array = $array[$segment];
-				} elseif (is_object($array) && property_exists($array, $segment)) {
-					$value = $array = $array->$segment;
-				} else {
-					$value = $default;
-					break;
-				}
-			}
-		}
-
-		return $value;
+		return \array_get_by($this->config, $notation, $default);
 	}
 
 	public function set(string $notation, $value): ConfigInterface
 	{
-		$this->setDotNotation($this->config, $notation, $value);
+		\array_set_by($this->config, $notation, $value);
 
 		return $this;
-	}
-
-	protected function setDotNotation(array &$array, string $notation, $value): void
-	{
-		$keys = explode('.', $notation);
-
-		while (count($keys) > 1) {
-			$key = array_shift($keys);
-
-			if (!isset($array[$key])) {
-				$array[$key] = [];
-			}
-
-			$array = &$array[$key];
-		}
-
-		$key = reset($keys);
-
-		$array[$key] = $value;
 	}
 
 	public function add(array $array): ConfigInterface

@@ -365,28 +365,16 @@ trait AppFileTraits
 		return $success;
 	}
 
-	/**
-	 * Saves a parsable string representation of a variable
-	 *
-	 * @param string $cacheFilePath
-	 * @param mixed $data
-	 * @return bool
-	 */
-	static public function var_export_file(string $cacheFilePath, $data): bool
+	static public function var_export_php($data): string
 	{
-		return (bool) self::atomic_file_put_contents($cacheFilePath, self::var_export_safe($data));
-	}
-
-	static public function var_export_safe($data): string
-	{
-		if (is_array($data) || is_object($data)) {
-			$data = '<?php return ' . str_replace(['Closure::__set_state', 'stdClass::__set_state'], '(object)', var_export($data, true)) . ';';
-		} elseif (is_scalar($data)) {
-			$data = '<?php return "' . str_replace('"', '\"', $data) . '";';
+		if (\is_array($data) || \is_object($data)) {
+			$string = '<?php return ' . \str_replace(['Closure::__set_state', 'stdClass::__set_state'], '(object)', \var_export($data, true)) . ';';
+		} elseif (\is_scalar($data)) {
+			$string = '<?php return "' . \str_replace('"', '\"', $data) . '";';
 		} else {
 			throw new FileWriteFailedException('Cache export save unknown data type.');
 		}
 
-		return $data;
+		return $string;
 	}
 } /* end class */

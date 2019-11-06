@@ -49,7 +49,7 @@ class Cache implements CacheInterface
 			if (App::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && App::file_exists($this->cachePath . $key)) {
 				$meta = $this->getMetadata($key);
 
-				if (time() > $meta['expire']) {
+				if ($this->isExpired($meta['expire'])) {
 					$this->delete($key);
 				} else {
 					$get = App::include($this->cachePath . $key);
@@ -60,6 +60,11 @@ class Cache implements CacheInterface
 		}
 
 		return $get;
+	}
+
+	protected function isExpired(int $expire): bool
+	{
+		return (time() > $expire);
 	}
 
 	public function getMetadata(string $key): array
@@ -79,23 +84,20 @@ class Cache implements CacheInterface
 	{
 		\log_message('info', 'Cache Save ' . $key);
 
-		$data = App::var_export_safe($value);
+		$valuePHP = App::var_export_php($value);
+		$metaPHP = App::var_export_php($this->buildMetadata($valuePHP, $this->ttl($ttl)));
 
-		$this->saveMetadata($key, $data, $this->ttl($ttl));
-
-		return (bool) App::atomic_file_put_contents($this->cachePath . $key, $data);
+		return ((bool) App::atomic_file_put_contents($this->cachePath . $key . '.meta', $metaPHP) && (bool) App::atomic_file_put_contents($this->cachePath . $key, $valuePHP));
 	}
 
-	public function saveMetadata(string $key, string $data, int $ttl): bool
+	public function buildMetadata(string $valueString, int $ttl): array
 	{
-		$metadata = [
-			'strlen' => strlen($data),
+		return [
+			'strlen' => strlen($valueString),
 			'time' => time(),
 			'ttl' => (int) $ttl,
 			'expire' => (time() + $ttl)
 		];
-
-		return App::var_export_file($this->cachePath . $key . '.meta', $metadata);
 	}
 
 	public function delete(string $key)
