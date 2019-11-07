@@ -6,6 +6,6 @@
 */
 $plugin['xo:set'] = function ($options) use (&$in) {
 	foreach ($options['hash'] as $name => $value) {
-		$in[$name] = $value;
+		\array_set_by($in, $name, $value);
 	}
 };

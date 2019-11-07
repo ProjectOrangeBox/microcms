@@ -7,9 +7,9 @@
 
 */
 $plugin['xo:lookup'] = function ($options) use (&$in) {
-	$searchKey = $options['hash']['key'];
-	$default = $options['hash']['default'] ?? null;
-	$set = $options['hash']['set'] ?? false;
+	$searchKey = pluginInput($options, 'key');
+	$set = pluginInput($options, 'set', false);
+	$default = pluginInput($options, 'default', '');
 
 	$data = [];
 
@@ -33,18 +33,11 @@ $plugin['xo:lookup'] = function ($options) use (&$in) {
 		$data = c()->file->yaml($options['hash']['yaml']);
 	}
 
-	$keyFound = false;
+	$value = array_get_by($data,$searchKey,$default);
 
-	foreach ($data as $key => $value) {
-		if ($key == $searchKey) {
-			$keyFound = true;
-			break;
-		}
+	if ($set)	{
+		\array_set_by($in, $set, $value);
 	}
 
-	if ($keyFound && $set) {
-		$in[$set] = $value;
-	}
-
-	return ($keyFound) ? $value : $default;
+	return $value;
 };
