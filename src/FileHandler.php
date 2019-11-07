@@ -114,7 +114,7 @@ class FileHandler implements FileHandlerInterface
 		$array = '';
 
 		if (App::file_exists($filename)) {
-			$array = App::include($filename);
+			$array = include App::path($filename);
 		}
 
 		return $array;

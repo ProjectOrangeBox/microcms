@@ -52,7 +52,7 @@ class Cache implements CacheInterface
 				if ($this->isExpired($meta['expire'])) {
 					$this->delete($key);
 				} else {
-					$get = App::include($this->cachePath . $key);
+					$get = include self::path($this->cachePath . $key);
 				}
 			} else {
 				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');
@@ -74,7 +74,7 @@ class Cache implements CacheInterface
 		$metaData = [];
 
 		if (App::is_file($file . '.meta') && App::is_file($file)) {
-			$metaData = App::include($file . '.meta');
+			$metaData = include App::path($file . '.meta');
 		}
 
 		return $metaData;

@@ -148,18 +148,6 @@ trait AppFileTraits
 	}
 
 	/**
-	 * includes and evaluates the specified file.
-	 *
-	 * @param string $filename
-	 * @param bool $throw
-	 * @return mixed
-	 */
-	static public function include(string $filename, bool $throw = true) /* mixed */
-	{
-		return include(self::path($filename, $throw));
-	}
-
-	/**
 	 * Tells whether the filename is a regular file
 	 *
 	 * @param string $filename
