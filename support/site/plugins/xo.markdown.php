@@ -5,7 +5,7 @@
 
 */
 $plugin['xo:markdown'] = function ($options) {
-	$file = $options['hash']['file'];
+	$file = pluginInput($options, 'file');
 
 	$path = trim(pathinfo($file, PATHINFO_DIRNAME) . '/' . pathinfo($file, PATHINFO_FILENAME), './') . '.md';
 

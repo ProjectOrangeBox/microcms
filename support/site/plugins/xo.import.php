@@ -9,6 +9,8 @@
 
 */
 $plugin['xo:import'] = function ($options) use (&$in) {
+	$namespace = pluginInput($options, 'namespace', false);
+
 	$data = [];
 
 	if (isset($options['hash']['file'])) {
@@ -31,14 +33,10 @@ $plugin['xo:import'] = function ($options) use (&$in) {
 		$data = c()->file->yaml($options['hash']['yaml']);
 	}
 
-	$namespace = ($options['hash']['namespace']) ?? false;
-
-	foreach ($data as $name => $value) {
-		if ($namespace) {
-			$in[$namespace][$name] = $value;
-		} else {
-			$in[$name] = $value;
-		}
+	if ($namespace) {
+		$in[$namespace] = $data;
+	} else {
+		$in = array_replace_recursive($in, $data);
 	}
 
 	return '';

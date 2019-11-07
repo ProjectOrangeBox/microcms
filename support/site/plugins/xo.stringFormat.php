@@ -7,16 +7,15 @@
 */
 
 $plugin['xo:stringFormat'] = function () use (&$in) {
+	$format = pluginInput($options, 'format', '');
+	$escape = pluginInput($options, 'escape', false);
+	$set = pluginInput($options, 'set', false);
+
 	/* first is string */
 	$args = func_get_args();
 
 	/* last argument is plugin options - pop that off */
 	$options = array_pop($args);
-
-	$format = $options['hash']['format'] ?? '';
-
-	$escape = $options['hash']['escape'] ?? false;
-	$set = $options['hash']['set'] ?? false;
 
 	array_unshift($args, $format);
 

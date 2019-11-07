@@ -9,9 +9,10 @@
 
 */
 $plugin['xo:merge'] = function ($options) use (&$in) {
-	$data = [];
+	$escape = pluginInput($options, 'escape', false);
+	$namespace = pluginInput($options, 'namespace', false);
 
-	$escape = $options['hash']['escape'] ?? false;
+	$data = [];
 
 	try {
 		if (isset($options['hash']['file'])) {
@@ -37,14 +38,10 @@ $plugin['xo:merge'] = function ($options) use (&$in) {
 		showException($e);
 	}
 
-	$namespace = ($options['hash']['namespace']) ?? false;
-
-	foreach ($data as $name => $value) {
-		if ($namespace) {
-			$in[$namespace][$name] = $value;
-		} else {
-			$in[$name] = $value;
-		}
+	if ($namespace) {
+		$in[$namespace] = $data;
+	} else {
+		$in = array_replace_recursive($in, $data);
 	}
 
 	$template = false;
