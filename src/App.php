@@ -71,13 +71,17 @@ class App implements AppInterface
 	{
 		/* and away we go... */
 		$this->container->response->display(
-			$this->container->parser->parse(
-				$this->container->router->handle(
-					$this->container->request->uri()
-				),
-				$this->container->data->add(
-					$this->templateData($this->container)
-				)->collect()
+			$this->container->middleware->response(
+				$this->container->parser->parse(
+					$this->container->router->handle(
+						$this->container->middleware->request(
+							$this->container->request->uri()
+						)
+					),
+					$this->container->data->add(
+						$this->templateData($this->container)
+					)->collect()
+				)
 			)
 		);
 	}
@@ -119,6 +123,8 @@ class App implements AppInterface
 		]);
 
 		$container->response = new Response();
+
+		$container->middleware = new Middleware($container->config->get('filters.config', ''), $container->cache);
 
 		$container->router = new Router($container->config->get('router.routes'), $container->cache);
 	}
