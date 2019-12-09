@@ -201,7 +201,7 @@ class FileHandler implements FileHandlerInterface
 		$yaml = '';
 
 		if (App::file_exists($filename)) {
-			$yaml = yaml_parse(App::file_get_contents($filename));
+			$yaml = \yaml_parse(App::file_get_contents($filename));
 		}
 
 		return $yaml;

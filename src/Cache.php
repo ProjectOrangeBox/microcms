@@ -52,7 +52,7 @@ class Cache implements CacheInterface
 				if ($this->isExpired($meta['expire'])) {
 					$this->delete($key);
 				} else {
-					$get = include self::path($this->cachePath . $key);
+					$get = include App::path($this->cachePath . $key, true);
 				}
 			} else {
 				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');

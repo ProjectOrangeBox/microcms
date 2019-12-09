@@ -44,6 +44,12 @@ if (!function_exists('showException')) {
  * Add some stateless functions
  */
 
+/**
+ * Get a value from an array using dot notation with a default if it's not found
+ *
+ * $foo = array_get_by($array,'name.first','Beats Me');
+ *
+ */
 function array_get_by(array $array, string $notation, $default = null) /* mixed */
 {
 	$value = $default;
@@ -70,6 +76,12 @@ function array_get_by(array $array, string $notation, $default = null) /* mixed 
 	return $value;
 }
 
+/**
+ * Set a value in an array using dot notation
+ *
+ * array_set_by($array,'name.first','Johnny Appleseed');
+ *
+ */
 function array_set_by(array &$array, string $notation, $value): void
 {
 	$keys = explode('.', $notation);
@@ -89,6 +101,15 @@ function array_set_by(array &$array, string $notation, $value): void
 	$array[$key] = $value;
 }
 
+/**
+ *	Get input from a passed array with optional default if it's not found
+ *
+ * $value = pluginInput($arguments,'name','Beats Me');
+ *
+ * With regular expression validation
+ * $value = pluginInput($arguments,'name','Beats Me','#[A-Za-z0-9]*#');
+ *
+ */
 function pluginInput(array &$array, string $key, $default = null, string $regex = null) /* mixed */
 {
 	$value = $array['hash'][$key] ?? $default;

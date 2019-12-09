@@ -2,7 +2,9 @@
 
 namespace projectorangebox\cms;
 
+use projectorangebox\cms\Exceptions\FileChmodFailedException;
 use projectorangebox\cms\Exceptions\IO\FileNotFoundException;
+use projectorangebox\cms\Exceptions\IO\FileRenameFailedException;
 use projectorangebox\cms\Exceptions\IO\FileWriteFailedException;
 use projectorangebox\cms\Exceptions\IO\FolderNotWritableException;
 
@@ -207,7 +209,7 @@ trait AppFileTraits
 	 * @param bool $throw
 	 * @return resource
 	 */
-	static public function fopen(string $filename, string $mode, bool $throw = true): \resource
+	static public function fopen(string $filename, string $mode, bool $throw = true)
 	{
 		return \fopen(self::path($filename, $throw), $mode);
 	}
@@ -266,12 +268,12 @@ trait AppFileTraits
 
 		/* changes file permissions so I can read/write and everyone else read */
 		if (\chmod($tmpfname, 0644) === false) {
-			throw new FileOperationFailedException($tmpfname);
+			throw new FileChmodFailedException($tmpfname);
 		}
 
 		/* move it into place - this is the atomic function */
 		if (\rename($tmpfname, $filepath) === false) {
-			throw new FileOperationFailedException($tmpfname . ' > ' . $filepath);
+			throw new FileRenameFailedException($tmpfname . ' > ' . $filepath);
 		}
 
 		/* if it's cached we need to flush it out so the old one isn't loaded */
