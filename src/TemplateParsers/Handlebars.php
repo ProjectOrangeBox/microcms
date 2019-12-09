@@ -4,9 +4,9 @@ namespace projectorangebox\cms\TemplateParsers;
 
 use projectorangebox\cms\App;
 use Exception;
-use projectorangebox\cms\HandlebarsException;
 use LightnCandy\LightnCandy;
 use projectorangebox\cms\Exceptions\IO\FileNotFoundException;
+use projectorangebox\cms\Exceptions\MVC\HandlebarsException;
 use projectorangebox\cms\TemplateParserInterface;
 use projectorangebox\cms\Exceptions\MVC\PartialNotFoundException;
 use projectorangebox\cms\Exceptions\MVC\TemplateNotFoundException;
