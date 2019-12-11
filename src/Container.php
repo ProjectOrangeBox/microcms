@@ -52,4 +52,9 @@ class Container implements ContainerInterface
 	{
 		unset(self::$services[\strtolower($name)]);
 	}
+
+	public function keys(): array
+	{
+		return \array_keys(self::$services);
+	}
 } /* end class */

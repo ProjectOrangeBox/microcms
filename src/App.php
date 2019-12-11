@@ -74,6 +74,8 @@ class App implements AppInterface
 	 */
 	public function bootstrap(array &$config, ContainerInterface $container): void
 	{
+		self::setRoot(__ROOT__);
+
 		$container->config = new Config($config);
 		$container->log = new Logger($container->config->get('log'));
 
