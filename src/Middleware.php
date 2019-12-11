@@ -24,7 +24,7 @@ class Middleware implements MiddlewareInterface
 		if ($phpFile = $this->fileExist($uri, (array) $this->config['in'])) {
 			\log_message('debug', 'Middleware Request for ' . $phpFile);
 
-			include App::path($phpFile);
+			include App::resolve($phpFile);
 		}
 
 		return $this->uri = $uri;
@@ -35,7 +35,7 @@ class Middleware implements MiddlewareInterface
 		if ($phpFile = $this->fileExist($this->uri, (array) $this->config['out'])) {
 			\log_message('debug', 'Middleware Response for ' . $phpFile);
 
-			include App::path($phpFile);
+			include App::resolve($phpFile);
 		}
 
 		return $output;

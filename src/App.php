@@ -13,9 +13,9 @@ namespace projectorangebox\cms;
 
 use projectorangebox\cms\FileHandler;
 use projectorangebox\cms\AppInterface;
-use projectorangebox\cms\AppFileTraits;
 use projectorangebox\cms\CacheInterface;
 use projectorangebox\cms\ContainerInterface;
+use projectorangebox\cms\FilesystemFunctionsTrait;
 use projectorangebox\cms\TemplateParsers\PHPview;
 use projectorangebox\cms\TemplateParsers\Markdown;
 use projectorangebox\cms\TemplateParsers\Handlebars;
@@ -33,7 +33,7 @@ use projectorangebox\cms\TemplateParsers\Handlebars;
  */
 class App implements AppInterface
 {
-	use AppFileTraits;
+	use FilesystemFunctionsTrait;
 
 	protected $config;
 	protected $container;
@@ -67,24 +67,6 @@ class App implements AppInterface
 		$this->bootstrap($config, $container);
 	}
 
-	public function dispatch(): void
-	{
-		/* and away we go... */
-		$this->container->response->display(
-			$this->container->middleware->response(
-				$this->container->parser->parse(
-					$this->container->router->handle(
-						$this->container->middleware->request(
-							$this->container->request->uri()
-						)
-					),
-					$this->container->data->add(
-						$this->templateData($this->container)
-					)->collect()
-				)
-			)
-		);
-	}
 
 	/**
 	 * If you need to override the bootstrapping
@@ -129,6 +111,25 @@ class App implements AppInterface
 		$container->router = new Router($container->config->get('router.routes'), $container->cache);
 	}
 
+	public function dispatch(): void
+	{
+		/* and away we go... */
+		$this->container->response->display(
+			$this->container->middleware->response(
+				$this->container->parser->parse(
+					$this->container->router->handle(
+						$this->container->middleware->request(
+							$this->container->request->uri()
+						)
+					),
+					$this->container->data->add(
+						$this->templateData($this->container)
+					)->collect()
+				)
+			)
+		);
+	}
+
 	/**
 	 * If you need to override the bootstrapping
 	 * Extend this class
@@ -154,21 +155,12 @@ class App implements AppInterface
 		$cacheKey = 'app.' . $cacheName . '.php';
 
 		if (!$found = $cache->get($cacheKey)) {
-			$pathinfo = \pathinfo($path);
-
-			$stripFromBeginning = self::path($pathinfo['dirname']);
-			$stripLen = \strlen($stripFromBeginning) + 1;
-
-			$extension = $pathinfo['extension'];
-			$extensionLen = \strlen($extension) + 1;
-
-			$root = self::path('');
-			$rootLen = \strlen($root) - 1;
-
 			$found = [];
 
-			foreach (self::globr($path) as $file) {
-				$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = \substr($file, $rootLen);
+			foreach (self::glob($path, 0, true) as $file) {
+				$pathinfo = App::pathinfo($file);
+
+				$found[\strtolower(\substr($pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'], \strlen(dirname($path)) + 1))] = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['basename'];
 			}
 
 			$cache->save($cacheKey, $found);

@@ -23,7 +23,7 @@ class Markdown implements TemplateParserInterface
 
 		$this->config = array_replace($requiredDefaults, $config);
 
-		App::mkdir($this->config['cache folder']);
+		App::mkdir($this->config['cache folder'], 0777);
 	}
 
 	public function parse(string $templateFile, array $data = [], bool $return = false): string

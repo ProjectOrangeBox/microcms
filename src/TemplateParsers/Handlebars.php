@@ -6,7 +6,7 @@ use projectorangebox\cms\App;
 use Exception;
 use LightnCandy\LightnCandy;
 use projectorangebox\cms\Exceptions\IO\FileNotFoundException;
-use projectorangebox\cms\Exceptions\MVC\HandlebarsException;
+use projectorangebox\cms\Exceptions\MVC\HandlebarsException as MVCHandlebarsException;
 use projectorangebox\cms\TemplateParserInterface;
 use projectorangebox\cms\Exceptions\MVC\PartialNotFoundException;
 use projectorangebox\cms\Exceptions\MVC\TemplateNotFoundException;
@@ -73,7 +73,7 @@ class Handlebars implements TemplateParserInterface
 
 		$this->config = array_replace($requiredDefaults, $config);
 
-		App::mkdir($this->config['cache folder']);
+		App::mkdir($this->config['cache folder'], 0777);
 	}
 
 	public function exists(string $name): string
@@ -296,7 +296,7 @@ class Handlebars implements TemplateParserInterface
 	{
 		log_message('info', 'handlebars run ' . $compiledFile);
 
-		$compiledFile = App::path($compiledFile);
+		$compiledFile = App::resolve($compiledFile);
 
 		/* did we find this template? */
 		if (!file_exists($compiledFile)) {
@@ -309,7 +309,7 @@ class Handlebars implements TemplateParserInterface
 
 		/* is what we loaded even executable? */
 		if (!is_callable($templatePHP)) {
-			throw new HandlebarsException();
+			throw new MVCHandlebarsException();
 		}
 
 		/* send data into the magic void... */
@@ -343,7 +343,7 @@ class Handlebars implements TemplateParserInterface
 			/* find all of the plugin "services" */
 			if (\is_array($this->config['plugins'])) {
 				foreach ($this->config['plugins'] as $path) {
-					$pluginSource  = php_strip_whitespace(App::path($path));
+					$pluginSource  = php_strip_whitespace(App::resolve($path));
 					$pluginSource  = trim(str_replace(['<?php', '<?', '?>'], '', $pluginSource));
 					$pluginSource  = trim('/* ' . $path . ' */' . PHP_EOL . $pluginSource) . PHP_EOL . PHP_EOL;
 
@@ -359,7 +359,7 @@ class Handlebars implements TemplateParserInterface
 		$plugin = [];
 
 		/* include the combined "cache" file */
-		include App::path($cacheFile);
+		include App::resolve($cacheFile);
 
 		$this->plugins = $plugin;
 	}

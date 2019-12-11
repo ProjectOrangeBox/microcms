@@ -46,7 +46,9 @@ class FileHandler implements FileHandlerInterface
 
 		$this->dataPath = '/' . trim($dataPath, '/') . '/';
 
-		App::file_exists($this->dataPath, true);
+		if (!App::file_exists($this->dataPath)) {
+			throw new \Exception($this->dataPath . ' does not exist.');
+		}
 	}
 
 	/* auto detect by extension */
@@ -56,7 +58,7 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return
@@ -66,38 +68,61 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function load(string $filename, bool $cache = false) /* mixed */
+	public function load(string $filePath, bool $cache = false) /* mixed */
 	{
 		$data = [];
 
-		switch (App::pathinfo($this->normalize($filename), PATHINFO_EXTENSION)) {
+		switch (\pathinfo($filePath, PATHINFO_EXTENSION)) {
 			case 'md':
-				$data = $this->md($filename, $cache);
+				$data = $this->md($filePath, $cache);
 				break;
 			case 'yaml':
-				$data = $this->yaml($filename, $cache);
+				$data = $this->yaml($filePath, $cache);
 				break;
 			case 'ini':
-				$data = $this->ini($filename, $cache);
+				$data = $this->ini($filePath, $cache);
 				break;
 			case 'array':
-				$data = $this->array($filename, $cache);
+				$data = $this->array($filePath, $cache);
 				break;
 			case 'json':
-				$data = $this->json($filename, $cache);
+				$data = $this->json($filePath, $cache);
 				break;
 		}
 
 		return $data;
 	}
 
+	public function glob(string $pattern = '*'): array
+	{
+		$found = [];
+		$files = App::glob($this->getDataPath() . trim($pattern, '/'), 0, true);
+
+		foreach ($files as $file) {
+			die($file);
+			$fileData = $this->load();
+
+			$filename = App::basename($file);
+
+			if (\is_array($fileData)) {
+				$fileData['_filename'] = $filename;
+			} elseif (\is_object($fileData)) {
+				$fileData->_filename = $filename;
+			}
+
+			$found[$filename] = $fileData;
+		}
+
+		return $found;
+	}
+
 	/**
 	 *
 	 * Description Here
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return array
@@ -107,14 +132,14 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function array(string $filename, bool $cache = false): array
+	public function array(string $filePath, bool $cache = false): array
 	{
-		$filename = $this->normalize($filename, '.array');
+		$filePath = $this->addExtension($this->addPath($filePath), '.array');
 
 		$array = '';
 
-		if (App::file_exists($filename)) {
-			$array = include App::path($filename);
+		if (App::file_exists($filePath)) {
+			$array = include App::resolve($filePath);
 		}
 
 		return $array;
@@ -126,7 +151,7 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return array
@@ -136,14 +161,14 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function json(string $filename, bool $cache = false): array
+	public function json(string $filePath, bool $cache = false): array
 	{
-		$filename = $this->normalize($filename, '.json');
+		$filePath = $this->addExtension($this->addPath($filePath), '.json');
 
 		$array = '';
 
-		if (App::file_exists($filename)) {
-			$array = json_decode(App::file_get_contents($filename), true);
+		if (App::file_exists($filePath)) {
+			$array = json_decode(App::file_get_contents($filePath), true);
 		}
 
 		return $array;
@@ -155,7 +180,7 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return string
@@ -165,14 +190,14 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function md(string $filename, bool $cache = false): string
+	public function md(string $filePath, bool $cache = false): string
 	{
-		$filename = $this->normalize($filename, '.md');
+		$filePath = $this->addExtension($this->addPath($filePath), '.md');
 
 		$html = '';
 
-		if (App::file_exists($filename)) {
-			$html = Markdown::defaultTransform(App::file_get_contents($filename));
+		if (App::file_exists($filePath)) {
+			$html = Markdown::defaultTransform(App::file_get_contents($filePath));
 		}
 
 		return $html;
@@ -184,7 +209,7 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return array
@@ -194,14 +219,14 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function yaml(string $filename, bool $cache = false): array
+	public function yaml(string $filePath, bool $cache = false): array
 	{
-		$filename = $this->normalize($filename, '.yaml');
+		$filePath = $this->addExtension($this->addPath($filePath), '.yaml');
 
 		$yaml = '';
 
-		if (App::file_exists($filename)) {
-			$yaml = \yaml_parse(App::file_get_contents($filename));
+		if (App::file_exists($filePath)) {
+			$yaml = \yaml_parse(App::file_get_contents($filePath));
 		}
 
 		return $yaml;
@@ -213,7 +238,7 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * @access public
 	 *
-	 * @param string $filename
+	 * @param string $filePath
 	 *
 	 * @throws
 	 * @return array
@@ -223,14 +248,14 @@ class FileHandler implements FileHandlerInterface
 	 *
 	 * ```
 	 */
-	public function ini(string $filename, bool $cache = false): array
+	public function ini(string $filePath, bool $cache = false): array
 	{
-		$filename = $this->normalize($filename, '.ini');
+		$filePath = $this->addExtension($this->addPath($filePath), '.ini');
 
 		$ini = [];
 
-		if (App::file_exists($filename)) {
-			$ini = App::parse_ini_file($filename, true, INI_SCANNER_NORMAL);
+		if (App::file_exists($filePath)) {
+			$ini = App::parse_ini_file($filePath, true, INI_SCANNER_NORMAL);
 		}
 
 		return $ini;
@@ -247,23 +272,44 @@ class FileHandler implements FileHandlerInterface
 	}
 
 	/**
-	 * normalize
+	 * addPath
 	 *
-	 * @param string $filename
+	 * @param string $filePath
+	 * @return void
+	 */
+	protected function addPath(string $filePath): string
+	{
+		return $this->getDataPath() . $filePath;
+	}
+
+	/**
+	 * normalize path
+	 *
+	 * @param string $filePath
 	 * @param mixed string
 	 * @return void
 	 */
-	protected function normalize(string $filename, string $extension = ''): string
+	protected function addExtension(string $filePath, string $extension = ''): string
 	{
-		/* remove extension if it's there if not do nothing */
-		if (substr($filename, -strlen($extension)) == $extension) {
-			$filename = substr($filename, 0, -strlen($extension));
+		return $this->strip($filePath, $extension, 'end') . $extension;
+	}
+
+	/**
+	 * strip
+	 *
+	 * @param string $string
+	 * @param string $strip
+	 * @param string $from
+	 * @return void
+	 */
+	protected function strip(string $string, string $strip, string $from): string
+	{
+		if ($from == 'end') {
+			$string = (substr($string, -strlen($strip)) == $strip) ? substr($string, 0, strlen($string) - strlen($strip)) : $string;
+		} else {
+			$string = (substr($string, 0, strlen($strip)) == $strip) ? substr($string, strlen($strip)) : $string;
 		}
 
-		$sitePath = $this->dataPath . $filename . $extension;
-
-		log_message('info', 'FileHandler Get "' . $sitePath . '" .');
-
-		return $sitePath;
+		return $string;
 	}
 } /* end class */
