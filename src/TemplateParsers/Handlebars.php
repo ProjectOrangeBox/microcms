@@ -7,6 +7,7 @@ use Exception;
 use projectorangebox\cms\HandlebarsException;
 use LightnCandy\LightnCandy;
 use projectorangebox\cms\Exceptions\IO\FileNotFoundException;
+use projectorangebox\cms\Exceptions\MVC\HandlebarsException as MVCHandlebarsException;
 use projectorangebox\cms\TemplateParserInterface;
 use projectorangebox\cms\Exceptions\MVC\PartialNotFoundException;
 use projectorangebox\cms\Exceptions\MVC\TemplateNotFoundException;
@@ -73,7 +74,7 @@ class Handlebars implements TemplateParserInterface
 
 		$this->config = array_replace($requiredDefaults, $config);
 
-		App::mkdir($this->config['cache folder']);
+		\FS::mkdir($this->config['cache folder']);
 	}
 
 	public function exists(string $name): string
@@ -182,7 +183,7 @@ class Handlebars implements TemplateParserInterface
 					$template = $this->findPartial($name);
 				} catch (Exception $e) {
 					try {
-						$template = App::file_get_contents($this->findTemplate($name));
+						$template = \FS::file_get_contents($this->findTemplate($name));
 					} catch (Exception $e) {
 						$template = '<!-- partial named "' . $name . '" could not found --!>';
 					}
@@ -253,7 +254,7 @@ class Handlebars implements TemplateParserInterface
 	public function saveCompileFile(string $compiledFile, string $templatePhp): int
 	{
 		/* write out the compiled file */
-		return App::file_put_contents($compiledFile, '<?php ' . $templatePhp . '?>');
+		return \FS::file_put_contents($compiledFile, '<?php ' . $templatePhp . '?>');
 	}
 
 	/**
@@ -272,7 +273,7 @@ class Handlebars implements TemplateParserInterface
 		if ($this->config['forceCompile'] || !file_exists($compiledFile)) {
 			/* compile the template as either file or string */
 			if ($isFile) {
-				$source = App::file_get_contents($this->findTemplate($template));
+				$source = \FS::file_get_contents($this->findTemplate($template));
 				$comment = $template;
 			} else {
 				$source = $template;
@@ -296,7 +297,7 @@ class Handlebars implements TemplateParserInterface
 	{
 		log_message('info', 'handlebars run ' . $compiledFile);
 
-		$compiledFile = App::path($compiledFile);
+		$compiledFile = \FS::resolve($compiledFile);
 
 		/* did we find this template? */
 		if (!file_exists($compiledFile)) {
@@ -309,7 +310,7 @@ class Handlebars implements TemplateParserInterface
 
 		/* is what we loaded even executable? */
 		if (!is_callable($templatePHP)) {
-			throw new HandlebarsException();
+			throw new MVCHandlebarsException();
 		}
 
 		/* send data into the magic void... */
@@ -337,13 +338,13 @@ class Handlebars implements TemplateParserInterface
 
 		$cacheFile = $this->config['cache folder'] . '/' . $this->config['HBCachePrefix'] . 'helpers.php';
 
-		if ($this->config['forceCompile'] || !App::file_exists($cacheFile)) {
+		if ($this->config['forceCompile'] || !\FS::file_exists($cacheFile)) {
 			$combined  = '<?php' . PHP_EOL . '/*' . PHP_EOL . 'DO NOT MODIFY THIS FILE' . PHP_EOL . 'Written: ' . date('Y-m-d H:i:s T') . PHP_EOL . '*/' . PHP_EOL . PHP_EOL;
 
 			/* find all of the plugin "services" */
 			if (\is_array($this->config['plugins'])) {
 				foreach ($this->config['plugins'] as $path) {
-					$pluginSource  = php_strip_whitespace(App::path($path));
+					$pluginSource  = php_strip_whitespace(\FS::resolve($path));
 					$pluginSource  = trim(str_replace(['<?php', '<?', '?>'], '', $pluginSource));
 					$pluginSource  = trim('/* ' . $path . ' */' . PHP_EOL . $pluginSource) . PHP_EOL . PHP_EOL;
 
@@ -352,14 +353,14 @@ class Handlebars implements TemplateParserInterface
 			}
 
 			/* save to the cache folder on this machine (in a multi-machine env each will just recreate this locally) */
-			App::file_put_contents($cacheFile, trim($combined));
+			\FS::file_put_contents($cacheFile, trim($combined));
 		}
 
 		/* start with empty array */
 		$plugin = [];
 
 		/* include the combined "cache" file */
-		include App::path($cacheFile);
+		include \FS::resolve($cacheFile);
 
 		$this->plugins = $plugin;
 	}

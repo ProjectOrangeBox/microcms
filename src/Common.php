@@ -89,11 +89,11 @@ function array_set_by(array &$array, string $notation, $value): void
 	$array[$key] = $value;
 }
 
-function pluginInput(array &$array, string $key, $default = null, string $regex = null) /* mixed */
+function pluginInput(array &$array, string $key, $default = '##EMPTYVALUE##', string $regex = null) /* mixed */
 {
 	$value = $array['hash'][$key] ?? $default;
 
-	if ($value === null) {
+	if ($value === '##EMPTYVALUE##') {
 		showException(new \Exception('Plugin Argument "' . $key . '" is required.'));
 	}
 
@@ -104,4 +104,11 @@ function pluginInput(array &$array, string $key, $default = null, string $regex 
 	}
 
 	return $value;
+}
+
+function array_sort_by_column(array &$array, string $column, int $dir = SORT_ASC, int $flags = null)
+{
+	$sortColumn = array_column($array, $column);
+	var_dump($sortColumn);
+	array_multisort($sortColumn, $dir, $array, $flags);
 }

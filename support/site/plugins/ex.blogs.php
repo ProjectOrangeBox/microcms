@@ -12,14 +12,14 @@ $plugin['ex:blogs'] = function ($options) use (&$in) {
 
 	$sorted = [];
 
-	$rootPath = \projectorangebox\cms\App::path(c()->file->getDataPath());
+	$rootPath = \FS::resolve(c()->file->getDataPath());
 	$searchPath =  ltrim($path, '/');
 	$completePath = $rootPath . '/' . $searchPath;
-	$foundFiles = \projectorangebox\cms\App::globr($completePath . '/*');
+	$foundFiles = \FS::glob($completePath . '/*', 0, true, true);
 
 	foreach ($foundFiles as $file) {
-		if (\projectorangebox\cms\App::is_file($file)) {
-			$sorted[]['path'] = substr($file, strlen($rootPath));
+		if (\FS::is_file($file)) {
+			$sorted[]['path'] = $file;
 			if (++$limitMet >= $limit) {
 				break;
 			}

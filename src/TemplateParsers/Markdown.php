@@ -23,12 +23,12 @@ class Markdown implements TemplateParserInterface
 
 		$this->config = array_replace($requiredDefaults, $config);
 
-		App::mkdir($this->config['cache folder']);
+		\FS::mkdir($this->config['cache folder']);
 	}
 
 	public function parse(string $templateFile, array $data = [], bool $return = false): string
 	{
-		return $this->_parse(App::file_get_contents($this->config['views'][strtolower(trim($templateFile, '/'))], true), $data, $return);
+		return $this->_parse(\FS::file_get_contents($this->config['views'][strtolower(trim($templateFile, '/'))], true), $data, $return);
 	}
 
 	public function parse_string(string $templateStr, array $data = [], bool $return = false): string
@@ -38,7 +38,7 @@ class Markdown implements TemplateParserInterface
 
 	protected function _parse(string $template, array $data, bool $return): string
 	{
-		$template = $this->merge(App::file_get_contents($this->compileFile($template)), $data);
+		$template = $this->merge(\FS::file_get_contents($this->compileFile($template)), $data);
 
 		if (!$return) {
 			echo $template;
@@ -64,7 +64,7 @@ class Markdown implements TemplateParserInterface
 		$compiledFile = $this->config['cache folder'] . '/' . md5($template) . '.php';
 
 		if ($this->config['forceCompile'] || !file_exists($compiledFile)) {
-			App::file_put_contents($compiledFile, MichelfMarkdown::defaultTransform($template));
+			\FS::file_put_contents($compiledFile, MichelfMarkdown::defaultTransform($template));
 		}
 
 		return $compiledFile;

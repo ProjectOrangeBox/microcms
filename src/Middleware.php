@@ -2,7 +2,6 @@
 
 namespace projectorangebox\cms;
 
-use projectorangebox\cms\App;
 use projectorangebox\cms\CacheInterface;
 
 class Middleware implements MiddlewareInterface
@@ -24,7 +23,7 @@ class Middleware implements MiddlewareInterface
 		if ($phpFile = $this->fileExist($uri, (array) $this->config['in'])) {
 			\log_message('debug', 'Middleware Request for ' . $phpFile);
 
-			include App::path($phpFile);
+			include \FS::resolve($phpFile);
 		}
 
 		return $this->uri = $uri;
@@ -35,7 +34,7 @@ class Middleware implements MiddlewareInterface
 		if ($phpFile = $this->fileExist($this->uri, (array) $this->config['out'])) {
 			\log_message('debug', 'Middleware Response for ' . $phpFile);
 
-			include App::path($phpFile);
+			include \FS::resolve($phpFile);
 		}
 
 		return $output;
@@ -49,7 +48,7 @@ class Middleware implements MiddlewareInterface
 			if ($phpFile = $this->match($uri, $search)) {
 				$phpFile = trim($this->config['path'], '/') . '/' . trim($phpFile, '/');
 
-				if (App::file_exists($phpFile)) {
+				if (\FS::file_exists($phpFile)) {
 					$found = $phpFile;
 				} else {
 					\log_message('error', 'Filter file "' . $phpFile . '" Not found.');
@@ -89,8 +88,8 @@ class Middleware implements MiddlewareInterface
 		if (!$ini = $this->cache->get($cacheKey)) {
 			$ini = [];
 
-			if (App::file_exists($filename)) {
-				$lines = App::file($filename);
+			if (\FS::file_exists($filename)) {
+				$lines = \FS::file($filename);
 				$section = '_root_';
 
 				foreach ($lines as $line) {

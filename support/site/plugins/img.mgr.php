@@ -18,9 +18,9 @@ $plugin['img:mgr'] = function ($options) {
 	$ext = $config['image default ext'];
 	$path = '/' . trim($config['images'], '/') . '/';
 
-	if (\projectorangebox\cms\App::file_exists($path . $name)) {
+	if (\FS::file_exists($path . $name)) {
 		$path = $path . $name;
-	} elseif (\projectorangebox\cms\App::file_exists($path . $name . '.' . $ext)) {
+	} elseif (\FS::file_exists($path . $name . '.' . $ext)) {
 		$path = $path . $name . '.' . $ext;
 	} else {
 		$path = $path . $imageNotFound;

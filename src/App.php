@@ -13,7 +13,6 @@ namespace projectorangebox\cms;
 
 use projectorangebox\cms\FileHandler;
 use projectorangebox\cms\AppInterface;
-use projectorangebox\cms\AppFileTraits;
 use projectorangebox\cms\CacheInterface;
 use projectorangebox\cms\ContainerInterface;
 use projectorangebox\cms\TemplateParsers\PHPview;
@@ -33,8 +32,6 @@ use projectorangebox\cms\TemplateParsers\Handlebars;
  */
 class App implements AppInterface
 {
-	use AppFileTraits;
-
 	protected $config;
 	protected $container;
 
@@ -53,6 +50,12 @@ class App implements AppInterface
 		if (!\defined('__ROOT__')) {
 			throw new \Exception('__ROOT__ not defined.');
 		}
+
+		/* require abstract FileSystem Functions */
+		require 'FS.php';
+
+		/* Set Root */
+		\FS::setRoot(__ROOT__);
 
 		define('DEBUG', ($config['application']['debug'] ?? false));
 
@@ -95,7 +98,7 @@ class App implements AppInterface
 		$container->config = new Config($config);
 		$container->log = new Logger($container->config->get('log'));
 
-		$container->cache = new Cache($container->config->get('cache.path', '/cache'), $container->config->get('cache.ttl', 0));
+		$container->cache = new CacheFile($container->config->get('cache.path', '/cache'), $container->config->get('cache.ttl', 0));
 
 		$container->file = new FileHandler($container->config->get('paths.data'), $container->cache);
 
@@ -156,19 +159,16 @@ class App implements AppInterface
 		if (!$found = $cache->get($cacheKey)) {
 			$pathinfo = \pathinfo($path);
 
-			$stripFromBeginning = self::path($pathinfo['dirname']);
+			$stripFromBeginning = $pathinfo['dirname'];
 			$stripLen = \strlen($stripFromBeginning) + 1;
 
 			$extension = $pathinfo['extension'];
 			$extensionLen = \strlen($extension) + 1;
 
-			$root = self::path('');
-			$rootLen = \strlen($root) - 1;
-
 			$found = [];
 
-			foreach (self::globr($path) as $file) {
-				$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = \substr($file, $rootLen);
+			foreach (\FS::glob($path, 0, true, true) as $file) {
+				$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = $file;
 			}
 
 			$cache->save($cacheKey, $found);

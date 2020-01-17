@@ -11,7 +11,6 @@
 
 namespace projectorangebox\cms;
 
-use projectorangebox\cms\App;
 use projectorangebox\cms\CacheInterface;
 
 /**
@@ -25,7 +24,7 @@ use projectorangebox\cms\CacheInterface;
  * @filesource
  *
  */
-class Cache implements CacheInterface
+class CacheFile implements CacheInterface
 {
 	protected $cachePath = '';
 	protected $ttl;
@@ -36,7 +35,7 @@ class Cache implements CacheInterface
 		$this->cachePath = rtrim($cachePath, '/') . '/';
 		$this->ttl = $ttl;
 
-		App::mkdir($this->cachePath);
+		\FS::mkdir($this->cachePath);
 	}
 
 	public function get(string $key)
@@ -46,13 +45,13 @@ class Cache implements CacheInterface
 		$get = false;
 
 		if ($this->ttl > 1) {
-			if (App::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && App::file_exists($this->cachePath . $key)) {
+			if (\FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && \FS::file_exists($this->cachePath . $key)) {
 				$meta = $this->getMetadata($key);
 
 				if ($this->isExpired($meta['expire'])) {
 					$this->delete($key);
 				} else {
-					$get = include self::path($this->cachePath . $key);
+					$get = include \FS::resolve($this->cachePath . $key);
 				}
 			} else {
 				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');
@@ -73,8 +72,8 @@ class Cache implements CacheInterface
 
 		$metaData = [];
 
-		if (App::is_file($file . '.meta') && App::is_file($file)) {
-			$metaData = include App::path($file . '.meta');
+		if (\FS::is_file($file . '.meta') && \FS::is_file($file)) {
+			$metaData = include \FS::resolve($file . '.meta');
 		}
 
 		return $metaData;
@@ -84,10 +83,10 @@ class Cache implements CacheInterface
 	{
 		\log_message('info', 'Cache Save ' . $key);
 
-		$valuePHP = App::var_export_php($value);
-		$metaPHP = App::var_export_php($this->buildMetadata($valuePHP, $this->ttl($ttl)));
+		$valuePHP = \FS::var_export_php($value);
+		$metaPHP = \FS::var_export_php($this->buildMetadata($valuePHP, $this->ttl($ttl)));
 
-		return ((bool) App::atomic_file_put_contents($this->cachePath . $key . '.meta', $metaPHP) && (bool) App::atomic_file_put_contents($this->cachePath . $key, $valuePHP));
+		return ((bool) \FS::atomic_file_put_contents($this->cachePath . $key . '.meta', $metaPHP) && (bool) \FS::atomic_file_put_contents($this->cachePath . $key, $valuePHP));
 	}
 
 	public function buildMetadata(string $valueString, int $ttl): array
@@ -106,8 +105,8 @@ class Cache implements CacheInterface
 
 		$file = $this->cachePath . $key;
 
-		if (App::file_exists($file)) {
-			App::unlink($file);
+		if (\FS::file_exists($file)) {
+			\FS::unlink($file);
 		}
 	}
 
@@ -115,8 +114,8 @@ class Cache implements CacheInterface
 	{
 		$keys = [];
 
-		foreach (App::glob($this->cachePath . '*') as $path) {
-			$keys[] = App::basename($path);
+		foreach (\FS::glob($this->cachePath . '*') as $path) {
+			$keys[] = \FS::basename($path);
 		}
 
 		return $keys;
@@ -124,7 +123,7 @@ class Cache implements CacheInterface
 
 	public function clean(): void
 	{
-		foreach (App::glob($this->cachePath . '*') as $path) {
+		foreach (\FS::glob($this->cachePath . '*') as $path) {
 			self::delete($path);
 		}
 	}
