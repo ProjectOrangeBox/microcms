@@ -46,7 +46,7 @@ class App implements AppInterface
 		/* set the most basic exception handler inside common.php file */
 		set_exception_handler('showException');
 
-		/* This is required and the CORE of how the App Traits work! */
+		/* This is required */
 		if (!\defined('__ROOT__')) {
 			throw new \Exception('__ROOT__ not defined.');
 		}
@@ -54,7 +54,7 @@ class App implements AppInterface
 		/* require abstract FileSystem Functions */
 		require 'FS.php';
 
-		/* Set Root */
+		/* Set Application Root Folder */
 		\FS::setRoot(__ROOT__);
 
 		define('DEBUG', ($config['application']['debug'] ?? false));
@@ -68,25 +68,6 @@ class App implements AppInterface
 		}
 
 		$this->bootstrap($config, $container);
-	}
-
-	public function dispatch(): void
-	{
-		/* and away we go... */
-		$this->container->response->display(
-			$this->container->middleware->response(
-				$this->container->parser->parse(
-					$this->container->router->handle(
-						$this->container->middleware->request(
-							$this->container->request->uri()
-						)
-					),
-					$this->container->data->add(
-						$this->templateData($this->container)
-					)->collect()
-				)
-			)
-		);
 	}
 
 	/**
@@ -132,15 +113,31 @@ class App implements AppInterface
 		$container->router = new Router($container->config->get('router.routes'), $container->cache);
 	}
 
-	/**
-	 * If you need to override the bootstrapping
-	 * Extend this class
-	 */
+	public function dispatch(): void
+	{
+		/* and away we go... */
+		$this->container->response->display(
+			$this->container->middleware->response(
+				$this->container->parser->parse(
+					$this->container->router->handle(
+						$this->container->middleware->request(
+							$this->container->request->uri()
+						)
+					),
+					$this->container->data->add(
+						$this->templateData($this->container)
+					)->collect()
+				)
+			)
+		);
+	}
+
 	public function templateData(ContainerInterface $container): array
 	{
-		$data = [];
-
+		/* router captured */
 		$data['request.captured'] = $container->router->captured();
+
+		/* request captured */
 		$data['request.ajax'] = $container->request->isAjax();
 		$data['request.method'] = $container->request->requestMethod();
 		$data['request.segments'] = $container->request->segments();
