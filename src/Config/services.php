@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'config' => [function ($config) {
+	'config' => [function (&$config) {
 		return new \projectorangebox\cms\Config($config);
 	}, true],
 	'log' => [function ($container) {
@@ -23,7 +23,9 @@ return [
 		return new \projectorangebox\cms\Request($container->config->get('request'));
 	}, true],
 	'parser' => [function ($container) {
-		return new \projectorangebox\cms\Parser($container, $container->config->get('parsers', __ROOT__ . '/vendor/projectorangebox/cms/src/Config/parsers.php'), $container->config->get('response.404 view'));
+		$parserConfigFile = $container->config->get('parsers', __ROOT__ . '/vendor/projectorangebox/cms/src/Config/parsers.php');
+
+		return new \projectorangebox\cms\Parser($container, $parserConfigFile, $container->config->get('response.404 view'));
 	}, true],
 	'response' => [function ($container) {
 		return new \projectorangebox\cms\Response;

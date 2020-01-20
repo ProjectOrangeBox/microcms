@@ -10,14 +10,7 @@
 if (!function_exists('service')) {
 	function service(string $serviceName = null)
 	{
-		/* create it once */
-		static $serviceContainer;
-
-		if (!$serviceContainer) {
-			$serviceContainer = (new \projectorangebox\cms\App)->container();
-		}
-
-		return ($serviceName) ? $serviceContainer->get($serviceName) : $serviceContainer;
+		return ($serviceName) ? \projectorangebox\cms\App::container()->get($serviceName) : \projectorangebox\cms\App::container();
 	}
 }
 
