@@ -6,7 +6,7 @@ use projectorangebox\cms\TemplateParserInterface;
 
 interface ParserInterface
 {
-	public function __construct(string $fourohfour);
+	public function __construct(ContainerInterface $di, string $parserConfigFile, string $fourohfour);
 
 	/* get handler for extension */
 	public function __get(string $extension);

@@ -10,7 +10,7 @@ $plugin['xo:markdown'] = function ($options) {
 	$path = trim(pathinfo($file, PATHINFO_DIRNAME) . '/' . pathinfo($file, PATHINFO_FILENAME), './') . '.md';
 
 	/* markdown to html */
-	$html = c()->file->md($path);
+	$html = service('file')->md($path);
 
 	return new \LightnCandy\SafeString($html);
 };

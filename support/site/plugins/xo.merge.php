@@ -16,23 +16,23 @@ $plugin['xo:merge'] = function ($options) use (&$in) {
 
 	try {
 		if (isset($options['hash']['file'])) {
-			$data = c()->file->load($options['hash']['file']);
+			$data = service('file')->load($options['hash']['file']);
 		}
 
 		if (isset($options['hash']['array'])) {
-			$data = c()->file->array($options['hash']['array']);
+			$data = service('file')->array($options['hash']['array']);
 		}
 
 		if (isset($options['hash']['ini'])) {
-			$data = c()->file->ini($options['hash']['ini']);
+			$data = service('file')->ini($options['hash']['ini']);
 		}
 
 		if (isset($options['hash']['json'])) {
-			$data = c()->file->json($options['hash']['json']);
+			$data = service('file')->json($options['hash']['json']);
 		}
 
 		if (isset($options['hash']['yaml'])) {
-			$data = c()->file->yaml($options['hash']['yaml']);
+			$data = service('file')->yaml($options['hash']['yaml']);
 		}
 	} catch (\Exception $e) {
 		showException($e);
@@ -58,9 +58,9 @@ $plugin['xo:merge'] = function ($options) use (&$in) {
 
 	try {
 		if ($escape) {
-			$html = c()->parser->html->parse($template, $in, true);
+			$html = service('parser')->html->parse($template, $in, true);
 		} else {
-			$html = new \LightnCandy\SafeString(c()->parser->html->parse($template, $in, true));
+			$html = new \LightnCandy\SafeString(service('parser')->html->parse($template, $in, true));
 		}
 	} catch (Exception $e) {
 		showException($e);

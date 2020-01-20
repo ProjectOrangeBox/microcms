@@ -35,9 +35,15 @@ class Parser implements ParserInterface
 	protected $reparseKey;
 	protected $reparseData = [];
 
-	public function __construct(string $fourohfour)
+	public function __construct(ContainerInterface $di, string $parserConfigFile, string $fourohfour)
 	{
 		$this->fourohfour = $fourohfour;
+
+		$parsers = require $parserConfigFile;
+
+		foreach ($parsers as $extension => $parserClosure) {
+			$this->__set($extension, $parserClosure($di));
+		}
 	}
 
 	/* pass thru based on extension ...parser->html->parse(...) */

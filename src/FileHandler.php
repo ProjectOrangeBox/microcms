@@ -12,7 +12,6 @@
 
 namespace projectorangebox\cms;
 
-use projectorangebox\cms\App;
 use Michelf\Markdown;
 use projectorangebox\cms\FileHandlerInterface;
 use projectorangebox\cms\CacheInterface;

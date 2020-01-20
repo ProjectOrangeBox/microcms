@@ -10,9 +10,9 @@
 */
 
 $plugin['img:mgr'] = function ($options) {
-	$config = c()->config->get('plugins');
+	$config = service('config')->get('plugins');
 	$imageNotFound = $config['image not found'] ?? 'ImageNotFound.png';
-	$public = c()->config->get('paths.public');
+	$public = service('config')->get('paths.public');
 	$name = $options['hash']['name'];
 
 	$ext = $config['image default ext'];

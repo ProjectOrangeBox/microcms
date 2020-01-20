@@ -28,9 +28,11 @@ class Config implements ConfigInterface
 {
 	protected $config = [];
 
-	public function __construct(array &$config)
+	public function __construct(array &$array)
 	{
-		$this->config = &$config;
+		$this->config = &$array;
+
+		return $this;
 	}
 
 	public function get(string $notation,/* mixed */ $default = null) /* mixed */

@@ -6,12 +6,18 @@
  * before the App class is instantiated
  */
 
-/* Wrapper */
-if (!function_exists('c')) {
-	function c()
+/* wrapper to get service from container which is attached to the application */
+if (!function_exists('service')) {
+	function service(string $serviceName = null)
 	{
-		/* return instance of container */
-		return new \projectorangebox\cms\Container;
+		/* create it once */
+		static $serviceContainer;
+
+		if (!$serviceContainer) {
+			$serviceContainer = (new \projectorangebox\cms\App)->container();
+		}
+
+		return ($serviceName) ? $serviceContainer->get($serviceName) : $serviceContainer;
 	}
 }
 
@@ -20,8 +26,8 @@ if (!function_exists('log_message')) {
 	function log_message(string $type, string $msg): void
 	{
 		/* Is log even attached to the container yet? */
-		if (isset(c()->log)) {
-			c()->log->$type($msg);
+		if (service()->has('log')) {
+			service('log')->$type($msg);
 		}
 	}
 }

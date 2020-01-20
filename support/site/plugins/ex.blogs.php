@@ -12,7 +12,7 @@ $plugin['ex:blogs'] = function ($options) use (&$in) {
 
 	$sorted = [];
 
-	$rootPath = \FS::resolve(c()->file->getDataPath());
+	$rootPath = \FS::resolve(service('file')->getDataPath());
 	$searchPath =  ltrim($path, '/');
 	$completePath = $rootPath . '/' . $searchPath;
 	$foundFiles = \FS::glob($completePath . '/*', 0, true, true);

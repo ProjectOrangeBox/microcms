@@ -13,4 +13,4 @@ $config = parse_ini_file(__ROOT__ . '/site/config.ini', true, INI_SCANNER_TYPED)
 $container = new \projectorangebox\cms\Container();
 
 /* create container and application and dispatch */
-(new \projectorangebox\cms\App($config, $container))->dispatch();
+(new \projectorangebox\cms\service($config, $container))->dispatch();
