@@ -30,14 +30,12 @@ class Config implements ConfigInterface
 
 	public function get(string $notation,/* mixed */ $default = null) /* mixed */
 	{
-		return \array_get_by($this->config, $notation, $default);
+		return $this->_get($this->config, $notation, $default);
 	}
 
 	public function set(string $notation, $value = null): ConfigInterface
 	{
-		\array_set_by($this->config, $notation, $value);
-
-		return $this;
+		return $this->_set($this->config, $notation, $value);
 	}
 
 	public function merge(array &$array): ConfigInterface
@@ -59,5 +57,56 @@ class Config implements ConfigInterface
 	public function collect(): array
 	{
 		return $this->config;
+	}
+
+	/**
+	 * Add some stateless functions
+	 */
+
+	protected function _get(array $array, string $notation, $default = null) /* mixed */
+	{
+		$value = $default;
+
+		if (is_array($array) && array_key_exists($notation, $array)) {
+			$value = $array[$notation];
+		} elseif (is_object($array) && property_exists($array, $notation)) {
+			$value = $array->$notation;
+		} else {
+			$segments = explode('.', $notation);
+
+			foreach ($segments as $segment) {
+				if (is_array($array) && array_key_exists($segment, $array)) {
+					$value = $array = $array[$segment];
+				} elseif (is_object($array) && property_exists($array, $segment)) {
+					$value = $array = $array->$segment;
+				} else {
+					$value = $default;
+					break;
+				}
+			}
+		}
+
+		return $value;
+	}
+
+	protected function _set(array &$array, string $notation, $value): ConfigInterface
+	{
+		$keys = explode('.', $notation);
+
+		while (count($keys) > 1) {
+			$key = array_shift($keys);
+
+			if (!isset($array[$key])) {
+				$array[$key] = [];
+			}
+
+			$array = &$array[$key];
+		}
+
+		$key = reset($keys);
+
+		$array[$key] = $value;
+
+		return $this;
 	}
 } /* end class */

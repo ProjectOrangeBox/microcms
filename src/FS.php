@@ -229,6 +229,17 @@ class FS
 	}
 
 	/**
+	 * is_writable — Tells whether the filename is writable
+	 *
+	 * @param string $filename
+	 * @return bool
+	 */
+	static public function is_writable(string $filename): bool
+	{
+		return \is_writable(self::resolve($filename));
+	}
+
+	/**
 	 * fileatime — Gets last access time of file
 	 *
 	 * @param string $filename

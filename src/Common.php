@@ -20,7 +20,13 @@ if (!function_exists('log_message')) {
 	{
 		/* Is log even attached to the container yet? */
 		if (service()->has('log')) {
-			service('log')->$type($msg);
+			$logService = service('log');
+
+			if (!method_exists($logService, $type)) {
+				throw new \Exception('Log Message does not support the method "' . $type . '".');
+			} else {
+				service('log')->$type($msg);
+			}
 		}
 	}
 }
@@ -33,7 +39,11 @@ if (!function_exists('showException')) {
 
 		log_message('critical', $exception);
 
-		echo '<h2>Exception Thrown:</h2><pre>Error: ' . $exception . '</pre>';
+		if (PHP_SAPI == 'cli') {
+			echo 'Exception Thrown:' . PHP_EOL . $exception . PHP_EOL;
+		} else {
+			echo '<h2>Exception Thrown:</h2><pre>Error: ' . $exception . '</pre>';
+		}
 
 		exit(1);
 	}
@@ -108,7 +118,7 @@ function pluginInput(array &$array, string $key, $default = '##EMPTYVALUE##', st
 function array_sort_by_column(array &$array, string $column, int $dir = SORT_ASC, int $flags = null)
 {
 	$sortColumn = array_column($array, $column);
-	var_dump($sortColumn);
+
 	array_multisort($sortColumn, $dir, $array, $flags);
 }
 

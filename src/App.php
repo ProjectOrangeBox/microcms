@@ -32,6 +32,10 @@ class App implements AppInterface
 
 	public function __construct(array $config)
 	{
+		if (!defined('EOL')) {
+			define('EOL', (PHP_SAPI == 'cli') ? PHP_EOL : '<br />');
+		}
+
 		define('DEBUG', ($config['application']['debug'] ?? false));
 
 		if (DEBUG) {
@@ -56,19 +60,19 @@ class App implements AppInterface
 		/* require abstract FileSystem Functions */
 		require 'FS.php';
 
-		/* Set Application Root Folder */
-		\FS::setRoot(__ROOT__);
+		/* Set Application Root Folder and chdir(...) */
+		\FS::setRoot(__ROOT__, true);
 
 		/* if services where not included then use the defaults */
-		$servicesFile = __ROOT__ . ($config['services config file'] ?? '/vendor/projectorangebox/cms/src/Config/services.php');
+		$servicesFile = $config['services config file'] ?? '/vendor/projectorangebox/cms/src/Config/services.php';
 
 		/* Is the services configuration file there? */
-		if (!\file_exists($servicesFile)) {
+		if (!\FS::file_exists($servicesFile)) {
 			throw new Exception('Services configuration file not found.');
 		}
 
 		/* load the services array from the config file */
-		$services = require $servicesFile;
+		$services = require \FS::resolve($servicesFile);
 
 		/* did this return an array? */
 		if (!\is_array($services)) {
@@ -102,6 +106,8 @@ class App implements AppInterface
 
 	public function dispatch(): void
 	{
+		\log_message('info', 'App::Dispatch');
+
 		/* and away we go... */
 		self::$container->response->display(
 			self::$container->middleware->response(

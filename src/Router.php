@@ -50,27 +50,28 @@ class Router implements RouterInterface
 		log_message('info', 'URI ' . $uri);
 
 		/* default to no match */
-		$file = '';
+		$route = '';
 
-		foreach ($this->routes as $regex => $file) {
+		foreach ($this->routes as $regex => $route) {
 			if (preg_match($regex, $uri, $params)) {
-				log_message('info', 'Match - Template: ' . $file);
+				log_message('info', 'Matched the URI: ' . $uri . ' Against: ' . $regex . ' New URI: ' . $route);
 
 				foreach ($params as $key => $value) {
-					log_message('info', 'Captured ' . $key . ' ' . $value . '.');
+					/* replace dynamically captured sections */
+					$route = str_replace('$' . $key, $value, $route);
 
-					$file = str_replace('$' . $key, $value, $file);
+					log_message('info', 'Captured ' . $key . ' ' . $value . '.');
 
 					$this->captured[$key] = $value;
 				}
 
-				log_message('info', 'Rewritten - Template: ' . $file);
+				log_message('info', 'Final New URI: ' . $route);
 
 				break; /* found one no need to stay in loop */
 			}
 		}
 
-		return $file;
+		return $route;
 	}
 
 	public function captured(): array
@@ -78,21 +79,19 @@ class Router implements RouterInterface
 		return $this->captured;
 	}
 
-	protected function loadRoutesIni(string $filename): array
+	protected function loadRoutesIni(string $iniFile): array
 	{
-		log_message('info', 'Load Route INI file "' . $filename . '".');
+		log_message('info', 'Load Route INI file "' . $iniFile . '".');
 
 		$cacheKey = 'app.routes.ini';
 
 		if (!$ini = $this->cache->get($cacheKey)) {
 			$ini = [];
 
-			$routeFile = __ROOT__ . $filename;
-
-			if (!file_exists($routeFile)) {
-				log_message('info', 'Could not locate the routes.ini file at "' . $routeFile . '".');
+			if (!\FS::file_exists($iniFile)) {
+				log_message('info', 'Could not locate the routes.ini file at "' . $iniFile . '".');
 			} else {
-				$lines = file($routeFile);
+				$lines = \FS::file($iniFile);
 				$re = '/<(.[^>]*)>/m';
 
 				foreach ($lines as $line) {

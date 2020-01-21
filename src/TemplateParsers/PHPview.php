@@ -14,7 +14,7 @@ class PHPview implements TemplateParserInterface
 	{
 		$requiredDefaults = [
 			'cache folder' => '/cache/phpview', /* assocated array name => complete path */
-			'forceCompile' => (DEBUG == 'development'), /* boolean - always compile in developer mode */
+			'forceCompile' => DEBUG, /* boolean - always compile in developer mode */
 			'views' => [],
 		];
 
@@ -51,7 +51,7 @@ class PHPview implements TemplateParserInterface
 
 		$tempFile = \FS::resolve($this->config['cache path'] . '/parse_string.' . md5($templateStr) . '.php');
 
-		if ($this->config['forceCompile'] || !\file_exists($tempFile)) {
+		if ($this->config['forceCompile'] || !\FS::file_exists($tempFile)) {
 			if (!file_put_contents($tempFile, '<!-- compiled @ ' . date('Y-m-d h:i:s e') . ' -->' . PHP_EOL . $templateStr, LOCK_EX)) {
 				throw new IOFileNotFoundException($tempFile);
 			}

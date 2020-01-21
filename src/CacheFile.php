@@ -110,7 +110,7 @@ class CacheFile implements CacheInterface
 		}
 	}
 
-	public function info(): array
+	public function cache_info(): array
 	{
 		$keys = [];
 

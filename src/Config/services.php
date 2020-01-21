@@ -20,7 +20,7 @@ return [
 		return new \projectorangebox\cms\Request($container->config->get('request'));
 	}, true],
 	'parser' => [function ($container) {
-		$parserConfigFile = $container->config->get('parsers', __ROOT__ . '/vendor/projectorangebox/cms/src/Config/parsers.php');
+		$parserConfigFile = $container->config->get('parsers', \FS::resolve('/vendor/projectorangebox/cms/src/Config/parsers.php'));
 
 		return new \projectorangebox\cms\Parser($container, $parserConfigFile, $container->config->get('response.404 view'));
 	}, true],

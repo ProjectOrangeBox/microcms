@@ -75,13 +75,13 @@ class logger implements LoggerInterface
 		/* log path */
 		$logPath = $config['path'] ?? '/';
 
-		$logPath = __ROOT__ . trim($logPath, '/');
-
-		file_exists($logPath) || mkdir($logPath, 0755, true);
+		$logPath = '/' . trim($logPath, '/');
 
 		/* can we write to this folder? */
-		if (!is_dir($logPath) || !is_writable($logPath)) {
+		if (!\FS::is_dir($logPath) || !\FS::is_writable($logPath)) {
 			$this->enabled = false;
+
+			throw new \Exception('Can not write to log folder.');
 		}
 
 		$this->lineDateFormat = $config['line date format'] ?? 'r';
@@ -99,7 +99,7 @@ class logger implements LoggerInterface
 		/* file date format */
 		$dateFmt = $config['filename date format'] ?? 'Y-m-d';
 
-		$this->logFile = __ROOT__ . '/' . str_replace('%d', date($dateFmt), $logName);
+		$this->logFile = $logPath . '/' . str_replace('%d', date($dateFmt), $logName);
 	}
 
 	public function log(string $level, string $message, array $context = []): bool
@@ -108,9 +108,9 @@ class logger implements LoggerInterface
 
 		if ($this->enabled) {
 			if ($this->testLevel($level)) {
-				$bytes = file_put_contents($this->logFile, $this->format($level, $message, $context), FILE_APPEND | LOCK_EX);
+				$bytes = \FS::file_put_contents($this->logFile, $this->format($level, $message, $context), FILE_APPEND | LOCK_EX);
 
-				chmod($this->logFile, octdec($this->filePermissions));
+				\FS::chmod($this->logFile, octdec($this->filePermissions));
 			}
 		}
 

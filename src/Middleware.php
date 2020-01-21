@@ -8,7 +8,6 @@ class Middleware implements MiddlewareInterface
 {
 	protected $config;
 	protected $uri;
-
 	protected $cache;
 
 	public function __construct(string $configINI, CacheInterface $cache)
@@ -81,46 +80,50 @@ class Middleware implements MiddlewareInterface
 
 	protected function loadRoutesIni(string $filename): array
 	{
-		log_message('info', 'Load Route INI file "' . $filename . '".');
+		$ini = [];
 
-		$cacheKey = 'app.filters';
+		if (!empty($filename)) {
+			log_message('info', 'Load Route INI file "' . $filename . '".');
 
-		if (!$ini = $this->cache->get($cacheKey)) {
-			$ini = [];
+			$cacheKey = 'app.filters';
 
-			if (\FS::file_exists($filename)) {
-				$lines = \FS::file($filename);
-				$section = '_root_';
+			if (!$ini = $this->cache->get($cacheKey)) {
+				$ini = [];
 
-				foreach ($lines as $line) {
-					$line = trim($line);
+				if (\FS::file_exists($filename)) {
+					$lines = \FS::file($filename);
+					$section = '_root_';
 
-					/* if not a comment */
-					if ($line[0] != '#' && $line[0] != ';') {
-						if ($line[0] == '[') {
-							$section = substr($line, 1, -1);
-						} elseif (strpos($line, '=') !== false) {
-							list($key, $value) = str_getcsv($line, '=');
+					foreach ($lines as $line) {
+						$line = trim($line);
 
-							switch ($section) {
-								case 'in':
-								case 'out':
-									$ini[$section]['#^/' . ltrim(trim($key), '/') . '$#im'] = trim($value);
-									break;
-								case '_root_':
-									$ini[trim($key)] = trim($value);
-									break;
-								default:
-									$ini[$section][trim($key)] = trim($value);
+						/* if not a comment */
+						if ($line[0] != '#' && $line[0] != ';') {
+							if ($line[0] == '[') {
+								$section = substr($line, 1, -1);
+							} elseif (strpos($line, '=') !== false) {
+								list($key, $value) = str_getcsv($line, '=');
+
+								switch ($section) {
+									case 'in':
+									case 'out':
+										$ini[$section]['#^/' . ltrim(trim($key), '/') . '$#im'] = trim($value);
+										break;
+									case '_root_':
+										$ini[trim($key)] = trim($value);
+										break;
+									default:
+										$ini[$section][trim($key)] = trim($value);
+								}
 							}
 						}
 					}
+				} else {
+					\log_message('debug', 'Could not find "' . $filename . '".');
 				}
-			} else {
-				\log_message('debug', 'Could not find "' . $filename . '".');
-			}
 
-			$this->cache->save($cacheKey, $ini);
+				$this->cache->save($cacheKey, $ini);
+			}
 		}
 
 		return $ini;

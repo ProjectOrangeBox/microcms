@@ -2,9 +2,7 @@
 
 namespace projectorangebox\cms\TemplateParsers;
 
-use projectorangebox\cms\App;
 use Exception;
-use projectorangebox\cms\HandlebarsException;
 use LightnCandy\LightnCandy;
 use projectorangebox\cms\Exceptions\IO\FileNotFoundException;
 use projectorangebox\cms\Exceptions\MVC\HandlebarsException as MVCHandlebarsException;
@@ -64,12 +62,12 @@ class Handlebars implements TemplateParserInterface
 			'plugins' => [], /* array of complete paths to every plugin */
 			'templates' => [], /* assocated array name => complete path */
 			'partials' => [],  /* assocated array name => complete path */
-			'forceCompile' => (DEBUG == 'development'), /* boolean - always compile in developer mode */
+			'forceCompile' => DEBUG, /* boolean - always compile in developer mode */
 			'cache folder' => '/cache/handlebars', /* string - folder inside cache folder if any */
 			'HBCachePrefix' => 'hbs.', /* string - prefix all HBCache cached entries with */
 			'delimiters' => ['{{', '}}'], /* array */
 			/* lightncandy handlebars compiler flags https://github.com/zordius/lightncandy#compile-options */
-			'flags' => LightnCandy::FLAG_ERROR_EXCEPTION | LightnCandy::FLAG_HANDLEBARS | LightnCandy::FLAG_HANDLEBARSJS | LightnCandy::FLAG_BESTPERFORMANCE | LightnCandy::FLAG_RUNTIMEPARTIAL, /* integer */
+			'flags' => LightnCandy::FLAG_ERROR_EXCEPTION | LightnCandy::FLAG_HANDLEBARS | LightnCandy::FLAG_HANDLEBARSJS | LightnCandy::FLAG_RUNTIMEPARTIAL, /* integer */
 		];
 
 		$this->config = array_replace($requiredDefaults, $config);
@@ -270,7 +268,7 @@ class Handlebars implements TemplateParserInterface
 		$compiledFile = $this->config['cache folder'] . '/' . $this->config['HBCachePrefix'] . md5($template) . '.php';
 
 		/* always compile in development or not save or compile if doesn't exist */
-		if ($this->config['forceCompile'] || !file_exists($compiledFile)) {
+		if ($this->config['forceCompile'] || !\FS::file_exists($compiledFile)) {
 			/* compile the template as either file or string */
 			if ($isFile) {
 				$source = \FS::file_get_contents($this->findTemplate($template));

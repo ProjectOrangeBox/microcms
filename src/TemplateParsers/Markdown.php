@@ -16,7 +16,7 @@ class Markdown implements TemplateParserInterface
 	{
 		$requiredDefaults = [
 			'cache folder' => '/cache/markdown', /* assocated array name => complete path */
-			'forceCompile' => (DEBUG == 'development'), /* boolean - always compile in developer mode */
+			'forceCompile' => DEBUG, /* boolean - always compile in developer mode */
 			'delimiters' => ['{{', '}}'], /* array */
 			'views' => [],
 		];
@@ -63,7 +63,7 @@ class Markdown implements TemplateParserInterface
 	{
 		$compiledFile = $this->config['cache folder'] . '/' . md5($template) . '.php';
 
-		if ($this->config['forceCompile'] || !file_exists($compiledFile)) {
+		if ($this->config['forceCompile'] || !\FS::file_exists($compiledFile)) {
 			\FS::file_put_contents($compiledFile, MichelfMarkdown::defaultTransform($template));
 		}
 
