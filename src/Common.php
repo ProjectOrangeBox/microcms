@@ -111,3 +111,29 @@ function array_sort_by_column(array &$array, string $column, int $dir = SORT_ASC
 	var_dump($sortColumn);
 	array_multisort($sortColumn, $dir, $array, $flags);
 }
+
+function searchFor(string $path, string $cacheKey, \projectorangebox\cms\CacheInterface $cache): array
+{
+	/* build the complete cache key */
+	$cacheKey = 'app.search.for.' . $cacheKey . '.php';
+
+	if (!$found = $cache->get($cacheKey)) {
+		$pathinfo = \pathinfo($path);
+
+		$stripFromBeginning = $pathinfo['dirname'];
+		$stripLen = \strlen($stripFromBeginning) + 1;
+
+		$extension = $pathinfo['extension'];
+		$extensionLen = \strlen($extension) + 1;
+
+		$found = [];
+
+		foreach (\FS::glob($path, 0, true, true) as $file) {
+			$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = $file;
+		}
+
+		$cache->save($cacheKey, $found);
+	}
+
+	return $found;
+}

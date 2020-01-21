@@ -17,22 +17,12 @@ class Container implements ContainerInterface
 	 * @param mixed array (optional)
 	 * @return di
 	 */
-	public function __construct(array &$configArray = null)
+	public function __construct(array &$serviceArray = null)
 	{
-		$serviceArray = $configArray['services'] ?? null;
-
-		/* we don't need these anymore */
-		unset($configArray['services']);
-
 		if (is_array($serviceArray)) {
 			foreach ($serviceArray as $serviceName => $closureSingleton) {
 				$this->register($serviceName, $closureSingleton[0], $closureSingleton[1]);
 			}
-		}
-
-		/* is there a service named "config" registered? if so inject the entire config array */
-		if (isset($this->registeredServices['config']) && \is_array($configArray)) {
-			$this->registeredServices['config']['reference'] = $this->registeredServices['config']['closure']($configArray);
 		}
 	}
 

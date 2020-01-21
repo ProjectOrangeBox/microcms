@@ -1,8 +1,8 @@
 <?php
 
 return [
-	'config' => [function (&$config) {
-		return new \projectorangebox\cms\Config($config);
+	'config' => [function () {
+		return new \projectorangebox\cms\Config;
 	}, true],
 	'log' => [function ($container) {
 		return new \projectorangebox\cms\Logger($container->config->get('log'));
@@ -10,14 +10,11 @@ return [
 	'cache' => [function ($container) {
 		return new \projectorangebox\cms\CacheFile($container->config->get('cache.path', '/cache'), $container->config->get('cache.ttl', 0));
 	}, true],
-	'tools' => [function ($container) {
-		return new \projectorangebox\cms\Tools;
-	}, true],
 	'file' => [function ($container) {
 		return new \projectorangebox\cms\FileHandler($container->config->get('paths.data'), $container->cache);
 	}, true],
 	'data' => [function ($container) {
-		return new \projectorangebox\cms\Data($container->config->get('data', []));
+		return (new \projectorangebox\cms\Data)->merge($container->config->get('data', null));
 	}, true],
 	'request' => [function ($container) {
 		return new \projectorangebox\cms\Request($container->config->get('request'));

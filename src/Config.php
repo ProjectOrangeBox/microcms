@@ -28,30 +28,30 @@ class Config implements ConfigInterface
 {
 	protected $config = [];
 
-	public function __construct(array &$array)
-	{
-		$this->config = &$array;
-
-		return $this;
-	}
-
 	public function get(string $notation,/* mixed */ $default = null) /* mixed */
 	{
 		return \array_get_by($this->config, $notation, $default);
 	}
 
-	public function set(string $notation, $value): ConfigInterface
+	public function set(string $notation, $value = null): ConfigInterface
 	{
 		\array_set_by($this->config, $notation, $value);
 
 		return $this;
 	}
 
-	public function add(array $array): ConfigInterface
+	public function merge(array &$array): ConfigInterface
 	{
-		foreach ($array as $key => $value) {
-			$this->set($key, $value);
+		foreach ($array as $index => $value) {
+			$this->set($index, $value);
 		}
+
+		return $this;
+	}
+
+	public function replace(array &$array): ConfigInterface
+	{
+		$this->config = &$array;
 
 		return $this;
 	}

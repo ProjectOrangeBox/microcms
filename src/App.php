@@ -11,6 +11,7 @@
 
 namespace projectorangebox\cms;
 
+use Exception;
 use projectorangebox\cms\AppInterface;
 use projectorangebox\cms\ContainerInterface;
 
@@ -31,12 +32,15 @@ class App implements AppInterface
 
 	public function __construct(array $config)
 	{
-		/* if services where not included then use the defaults */
-		$config['services'] = require __ROOT__ . ($config['services config file'] ?? '/vendor/projectorangebox/cms/src/Config/services.php');
+		define('DEBUG', ($config['application']['debug'] ?? false));
 
-		$containerClass = $config['containerClass'] ?? '\projectorangebox\cms\Container';
-
-		self::$container = new $containerClass($config);
+		if (DEBUG) {
+			error_reporting(E_ALL & ~E_NOTICE);
+			ini_set('display_errors', 1);
+		} else {
+			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+			ini_set('display_errors', 0);
+		}
 
 		/* Bring in the "common" wrapper functions */
 		require 'Common.php';
@@ -46,7 +50,7 @@ class App implements AppInterface
 
 		/* This is required */
 		if (!\defined('__ROOT__')) {
-			throw new \Exception('__ROOT__ not defined.');
+			throw new Exception('__ROOT__ not defined.');
 		}
 
 		/* require abstract FileSystem Functions */
@@ -55,17 +59,42 @@ class App implements AppInterface
 		/* Set Application Root Folder */
 		\FS::setRoot(__ROOT__);
 
-		define('DEBUG', self::$container->config->get('application.debug', false));
+		/* if services where not included then use the defaults */
+		$servicesFile = __ROOT__ . ($config['services config file'] ?? '/vendor/projectorangebox/cms/src/Config/services.php');
 
-		if (DEBUG) {
-			error_reporting(E_ALL & ~E_NOTICE);
-			ini_set('display_errors', 1);
-		} else {
-			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-			ini_set('display_errors', 0);
+		/* Is the services configuration file there? */
+		if (!\file_exists($servicesFile)) {
+			throw new Exception('Services configuration file not found.');
 		}
+
+		/* load the services array from the config file */
+		$services = require $servicesFile;
+
+		/* did this return an array? */
+		if (!\is_array($services)) {
+			throw new Exception('Services configuration file is not an array.');
+		}
+
+		/* did they include a custom containerClass or should we us the default? */
+		$containerClass = $config['containerClass'] ?? '\projectorangebox\cms\Container';
+
+		/* does the container class exists? */
+		if (!\class_exists($containerClass, true)) {
+			throw new Exception('Services Class file not found.');
+		}
+
+		/* Create contrainer and send in the services array */
+		self::$container = new $containerClass($services);
+
+		/* Setup our configuration object with the configuration array */
+		self::$container->config->replace($config);
 	}
 
+	/**
+	 * return our dependency container
+	 *
+	 * @return ContainerInterface
+	 */
 	static public function container(): ContainerInterface
 	{
 		return self::$container;
@@ -82,9 +111,7 @@ class App implements AppInterface
 							self::$container->request->uri()
 						)
 					),
-					self::$container->data->add(
-						self::$container->tools::templateData(self::$container)
-					)->collect()
+					self::$container->data->merge(self::$container->parser->templateData())->collect()
 				)
 			)
 		);

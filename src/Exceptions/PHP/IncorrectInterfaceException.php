@@ -2,7 +2,8 @@
 
 namespace projectorangebox\cms\Exceptions\Internal;
 
-use projectorangebox\cms\Exceptions\InternalException;
+use projectorangebox\cms\Exceptions\PHPException;
 
-class IncorrectInterfaceException extends InternalException
-{ }
+class IncorrectInterfaceException extends PHPException
+{
+}

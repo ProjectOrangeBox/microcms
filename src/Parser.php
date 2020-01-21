@@ -11,7 +11,6 @@
 
 namespace projectorangebox\cms;
 
-use Exception;
 use projectorangebox\cms\ParserInterface;
 use projectorangebox\cms\TemplateParserInterface;
 use projectorangebox\cms\Exceptions\MVC\TemplateNotFoundException;
@@ -34,6 +33,7 @@ class Parser implements ParserInterface
 	protected $fourohfour = '';
 	protected $reparseKey;
 	protected $reparseData = [];
+	protected $di;
 
 	public function __construct(ContainerInterface $di, string $parserConfigFile, string $fourohfour)
 	{
@@ -44,6 +44,8 @@ class Parser implements ParserInterface
 		foreach ($parsers as $extension => $parserClosure) {
 			$this->__set($extension, $parserClosure($di));
 		}
+
+		$this->di = $di;
 	}
 
 	/* pass thru based on extension ...parser->html->parse(...) */
@@ -144,5 +146,22 @@ class Parser implements ParserInterface
 
 		/* return the handler that said they have the matching key */
 		return '';
+	}
+
+	public function templateData(): array
+	{
+		/* router captured */
+		$data['request.captured'] = $this->di->router->captured();
+
+		/* request captured */
+		$data['request.ajax'] = $this->di->request->isAjax();
+		$data['request.method'] = $this->di->request->requestMethod();
+		$data['request.segments'] = $this->di->request->segments();
+		$data['request.uri'] = $this->di->request->uri();
+		$data['request.server'] = $this->di->request->server();
+		$data['request.baseUrl'] = $this->di->request->baseUrl();
+		$data['request.request'] = $this->di->request->request();
+
+		return $data;
 	}
 } /* end class */
